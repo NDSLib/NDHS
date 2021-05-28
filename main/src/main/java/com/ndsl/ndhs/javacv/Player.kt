@@ -1,51 +1,275 @@
 package com.ndsl.ndhs.javacv
 
 import com.github.bun133.nngraphics.display.*
+import com.ndsl.ndhs.sound.ByteAudioOut
+import org.bytedeco.ffmpeg.global.avutil
+import org.bytedeco.javacv.Frame
 import org.bytedeco.javacv.Java2DFrameConverter
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.image.BufferedImage
+import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.ShortBuffer
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import javax.sound.sampled.AudioFormat
 import kotlin.concurrent.thread
 import kotlin.math.roundToLong
 
+// Almost Same as Frame,but easier one
+class PlayerEntry(var img: BufferedImage?, var audio: Array<java.nio.Buffer>?, var frame: Frame) {
+}
+
 class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
+    companion object {
+        private fun getAudioFormat(f: FrameGrabber): AudioFormat? {
+            val fg = f.getFrameGrabber()
+            var af: AudioFormat? = null
+            when (fg.sampleFormat) {
+                avutil.AV_SAMPLE_FMT_U8 -> {
+                }
+                avutil.AV_SAMPLE_FMT_S16 -> af =
+                    AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED, fg.sampleRate.toFloat(), 16, fg.audioChannels,
+                        fg.audioChannels * 2, fg.sampleRate.toFloat(), true
+                    )
+                avutil.AV_SAMPLE_FMT_S32 -> {
+                }
+                avutil.AV_SAMPLE_FMT_FLT -> af =
+                    AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED, fg.sampleRate.toFloat(), 16, fg.audioChannels,
+                        fg.audioChannels * 2, fg.sampleRate.toFloat(), true
+                    )
+                avutil.AV_SAMPLE_FMT_DBL -> {
+                }
+                avutil.AV_SAMPLE_FMT_U8P -> {
+                }
+                avutil.AV_SAMPLE_FMT_S16P -> af =
+                    AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED, fg.sampleRate.toFloat(), 16, fg.audioChannels,
+                        fg.audioChannels * 2, fg.sampleRate.toFloat(), true
+                    )
+                avutil.AV_SAMPLE_FMT_S32P ->                                         // 32 bit
+                    af = AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED, fg.sampleRate.toFloat(), 32, fg.audioChannels,
+                        fg.audioChannels * 2, fg.sampleRate.toFloat(), true
+                    )
+                avutil.AV_SAMPLE_FMT_FLTP -> af =
+                    AudioFormat(
+                        AudioFormat.Encoding.PCM_SIGNED, fg.sampleRate.toFloat(), 16, fg.audioChannels,
+                        fg.audioChannels * 2, fg.sampleRate.toFloat(), true
+                    )
+                avutil.AV_SAMPLE_FMT_DBLP -> {
+                }
+                avutil.AV_SAMPLE_FMT_S64 -> {
+                }
+                avutil.AV_SAMPLE_FMT_S64P -> {
+                }
+                else -> {
+                    println("unsupported")
+//                exitProcess(0)
+                }
+            }
+            return af
+        }
+    }
+
+
     var img: BufferedImage? = null
     private val converter = Java2DFrameConverter()
-    private var buf: SizedBuffer<BufferedImage> = SizedBuffer(20)
+    private var imgBuf: SizedBuffer<BufferedImage> = SizedBuffer((grabber.getFrameGrabber().frameRate * 10).toInt())
+    private var audioBuf: SizedBuffer<Array<java.nio.Buffer>> =
+        SizedBuffer((grabber.getFrameGrabber().frameRate * 10).toInt())
     var isPlaying = true
-    var timer = Timer(getNs())
+    var drawTimer = Timer(getDrawNs())
+    var audioTimer = Timer(getAudioNs())
+    val audio = ByteAudioOut(getAudioFormat(grabber)!!)
 
     init {
         thread {
             while (true) {
                 if (isPlaying && grabber.index <= grabber.getFrameGrabber().lengthInFrames) {
-                    if (!buf.isFilled()) {
+                    if (!imgBuf.isFilled() || !audioBuf.isFilled()) {
                         try {
-                            val i = converter.getBufferedImage(grabber.grabImage())
-                            if (i != null) buf.add(i)
+                            val f = grabber.grab()
+                            if (f.types.contains(Frame.Type.VIDEO)) {
+                                val i = converter.getBufferedImage(f)
+                                if (i != null) imgBuf.add(i)
+                            } else if (f.types.contains(Frame.Type.AUDIO)) {
+                                audioBuf.add(f.samples!!)
+                            }
+
                         } catch (e: Exception) {
                             // 握りつぶします。
                             println("握りつぶしました")
                         }
                     }
                 }
+
+                if (audioTimer.isUp()) {
+                    if (!audioBuf.isEmpty()) {
+                        println("[Delta:${System.nanoTime() - lastAudio},Timer:${audioTimer.nanos}]Updating Audio")
+                        lastAudio = System.nanoTime()
+                        val short = audioBuf.getAndRemove(0)
+                        if (short != null) {
+                            playAudio(short)
+                            audioTimer.restart()
+                        }
+                    } else {
+                        println("Audio:Out Of Buffer")
+                    }
+                }
                 Thread.sleep(1)
             }
         }
+
+        audio.start()
     }
 
+    var executor: ExecutorService = Executors.newSingleThreadExecutor()
+    var lastDraw = 0L
+    var lastAudio = 0L
+
     override fun onDraw(gg: Graphics) {
-        if (!timer.isStarted()) timer.start()
+        if (!drawTimer.isStarted()) drawTimer.start()
+        if (!audioTimer.isStarted()) audioTimer.start()
         if (img != null) {
             gg.drawImage(img, p.x, p.y, null)
         }
 
-        if (timer.isUp()) {
-            if (!buf.isEmpty()) {
-                img = buf.getAndRemove(0)
-                timer.restart()
+        if (drawTimer.isUp()) {
+            if (!imgBuf.isEmpty()) {
+                println("[Delta:${System.nanoTime() - lastDraw},Timer:${drawTimer.nanos}]Updating Image")
+                lastDraw = System.nanoTime()
+                val bufferedImage = imgBuf.getAndRemove(0)
+                if (bufferedImage != null) {
+                    img = bufferedImage
+                    drawTimer.restart()
+                }
+            } else {
+                println("Image:Out Of Buffer")
             }
         }
+    }
+
+    private fun playAudio(b: ShortBuffer) {
+        b.rewind()
+
+        val outBuffer = ByteBuffer.allocate(b.capacity() * 2)
+
+        for (i in 0 until b.capacity()) {
+            val value: Short = b.get(i)
+            outBuffer.putShort(value)
+        }
+
+        executor.submit {
+            audio.write(outBuffer.array(), 0, outBuffer.capacity())
+            outBuffer.clear()
+        }.get()
+    }
+
+    private fun playAudio(samples: Array<java.nio.Buffer>) {
+        var k: Int
+        val buf: Array<java.nio.Buffer> = samples
+        val leftData: FloatBuffer
+        val rightData: FloatBuffer
+        val ILData: ShortBuffer
+        val IRData: ShortBuffer
+        val TLData: ByteBuffer
+        val TRData: ByteBuffer
+        val vol = 0.1f // volume
+        val tl: ByteArray
+        val tr: ByteArray
+        val combine: ByteArray
+        when (grabber.getFrameGrabber().sampleFormat) {
+            avutil.AV_SAMPLE_FMT_FLTP -> {
+                leftData = buf[0] as FloatBuffer
+                TLData = floatToByteValue(leftData, vol)
+                rightData = buf[1] as FloatBuffer
+                TRData = floatToByteValue(rightData, vol)
+                tl = TLData.array()
+                tr = TRData.array()
+                combine = ByteArray(tl.size + tr.size)
+                k = 0
+                var i = 0
+                while (i < tl.size) {
+                    //Mix two channels
+                    var j = 0
+                    while (j < 2) {
+                        combine[j + 4 * k] = tl[i + j]
+                        combine[j + 2 + 4 * k] = tr[i + j]
+                        j++
+                    }
+                    k++
+                    i += 2
+                }
+                audio.write(combine, 0, combine.size)
+            }
+            avutil.AV_SAMPLE_FMT_S16 -> {
+                ILData = buf[0] as ShortBuffer
+                TLData = shortToByteValue(ILData, vol)
+                tl = TLData.array()
+                audio.write(tl, 0, tl.size)
+            }
+            avutil.AV_SAMPLE_FMT_FLT -> {
+                leftData = buf[0] as FloatBuffer
+                TLData = floatToByteValue(leftData, vol)
+                tl = TLData.array()
+                audio.write(tl, 0, tl.size)
+            }
+            avutil.AV_SAMPLE_FMT_S16P -> {
+                ILData = buf[0] as ShortBuffer
+                IRData = buf[1] as ShortBuffer
+                TLData = shortToByteValue(ILData, vol)
+                TRData = shortToByteValue(IRData, vol)
+                tl = TLData.array()
+                tr = TRData.array()
+                combine = ByteArray(tl.size + tr.size)
+                k = 0
+                var i = 0
+                while (i < tl.size) {
+                    var j = 0
+                    while (j < 2) {
+                        combine[j + 4 * k] = tl[i + j]
+                        combine[j + 2 + 4 * k] = tr[i + j]
+                        j++
+                    }
+                    k++
+                    i += 2
+                }
+                audio.write(combine, 0, combine.size)
+            }
+            else -> {
+                println("unsupport audio format")
+//                System.exit(0)
+            }
+        }
+    }
+
+    private fun shortToByteValue(arr: ShortBuffer, vol: Float): ByteBuffer {
+        val len = arr.capacity()
+        val bb = ByteBuffer.allocate(len * 2)
+        for (i in 0 until len) {
+            bb.putShort(i * 2, (arr[i].toFloat() * vol).toInt().toShort())
+        }
+        return bb
+    }
+
+    private fun floatToByteValue(arr: FloatBuffer, vol: Float): ByteBuffer {
+        val len = arr.capacity()
+        var f: Float
+        val v: Float
+        val res = ByteBuffer.allocate(len * 2)
+        v = 32768.0f * vol
+        for (i in 0 until len) {
+            f =
+                arr[i] * v
+            if (f > v) f = v
+            if (f < -v) f = v
+            res.putShort(i * 2, f.toInt().toShort())
+        }
+        return res
     }
 
     var p = Pos(0, 0)
@@ -56,7 +280,7 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
 
     fun setFrame(i: Int) {
         pause()
-        buf.clear()
+        imgBuf.clear()
         grabber.set(i)
         start()
     }
@@ -73,14 +297,19 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
         return grabber.getFrameGrabber().frameNumber
     }
 
-    private fun getNs(): Long {
+    private fun getDrawNs(): Long {
         return ((1000L * 1000L * 1000L) / grabber.getFrameGrabber().frameRate).roundToLong()
+    }
+
+    private fun getAudioNs(): Long {
+        return ((1000L * 1000L * 1000L) / grabber.getFrameGrabber().sampleRate)
     }
 
     fun width() = grabber.getFrameGrabber().imageWidth
     fun height() = grabber.getFrameGrabber().imageHeight
     fun size(): Rect = Rect(0, 0, width(), height())
 }
+
 
 class PlayerSeekBar(val player: Player, var nonFilled: Color = Color.GRAY, var filled: Color = Color.WHITE) :
     GraphicsDrawable(), MouseBoundedListener {

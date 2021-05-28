@@ -28,7 +28,7 @@ class BufferTest {
 
 class Main {
     val d = JFrameDisplay(name = "NDHS", bound = Rect(100, 100, 900, 900))
-    val grabber = FFmpegFrameGrabber(File("main\\src\\main\\resources\\video1.mp4"))
+    val grabber = FFmpegFrameGrabber(File("main\\src\\main\\resources\\video2.mp4"))
     fun main() {
         grabber.getFrameGrabber().start()
         val player = PlayerSeekBar(Player(grabber))
