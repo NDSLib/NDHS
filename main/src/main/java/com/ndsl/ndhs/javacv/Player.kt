@@ -109,8 +109,8 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
 
                 if (audioTimer.isUp()) {
                     if (!audioBuf.isEmpty()) {
-                        println("[Delta:${System.nanoTime() - lastAudio},Timer:${audioTimer.nanos}]Updating Audio")
-                        lastAudio = System.nanoTime()
+//                        println("[Delta:${System.nanoTime() - lastAudio},Timer:${audioTimer.nanos}]Updating Audio")
+//                        lastAudio = System.nanoTime()
                         val short = audioBuf.getAndRemove(0)
                         if (short != null) {
                             playAudio(short)
@@ -128,8 +128,8 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
     }
 
     var executor: ExecutorService = Executors.newSingleThreadExecutor()
-    var lastDraw = 0L
-    var lastAudio = 0L
+//    var lastDraw = 0L
+//    var lastAudio = 0L
 
     override fun onDraw(gg: Graphics) {
         if (!drawTimer.isStarted()) drawTimer.start()
@@ -140,8 +140,8 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
 
         if (drawTimer.isUp()) {
             if (!imgBuf.isEmpty()) {
-                println("[Delta:${System.nanoTime() - lastDraw},Timer:${drawTimer.nanos}]Updating Image")
-                lastDraw = System.nanoTime()
+//                println("[Delta:${System.nanoTime() - lastDraw},Timer:${drawTimer.nanos}]Updating Image")
+//                lastDraw = System.nanoTime()
                 val bufferedImage = imgBuf.getAndRemove(0)
                 if (bufferedImage != null) {
                     img = bufferedImage
