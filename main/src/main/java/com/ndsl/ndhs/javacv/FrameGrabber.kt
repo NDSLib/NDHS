@@ -1,5 +1,6 @@
 package com.ndsl.ndhs.javacv
 
+import com.github.bun133.nngraphics.display.Rect
 import org.bytedeco.javacv.FFmpegFrameGrabber
 import org.bytedeco.javacv.Frame
 import org.bytedeco.javacv.FrameGrabber
@@ -9,17 +10,17 @@ import java.io.File
 abstract class FrameGrabber : AutoCloseable {
     var index = 0
     abstract fun getFrameGrabber(): FrameGrabber
-    fun grab(): Frame {
+    fun grab(): Frame? {
         index++
         return aGrab()
     }
 
-    fun grabImage(): Frame {
+    fun grabImage(): Frame? {
         index++
         return aGrabImage()
     }
 
-    fun grabAudio(): Frame {
+    fun grabAudio(): Frame? {
         index++
         return aGrabAudio()
     }
@@ -29,18 +30,20 @@ abstract class FrameGrabber : AutoCloseable {
         aSet(index)
     }
 
-    protected abstract fun aGrab(): Frame
-    protected abstract fun aGrabImage(): Frame
-    protected abstract fun aGrabAudio(): Frame
+    fun rect() = Rect(0,0,getFrameGrabber().imageWidth,getFrameGrabber().imageHeight)
+
+    protected abstract fun aGrab(): Frame?
+    protected abstract fun aGrabImage(): Frame?
+    protected abstract fun aGrabAudio(): Frame?
     protected abstract fun aSet(index: Int)
 }
 
 class FFmpegFrameGrabber(file: File) : com.ndsl.ndhs.javacv.FrameGrabber() {
     val ffmpeg = FFmpegFrameGrabber(file)
     override fun getFrameGrabber(): FrameGrabber = ffmpeg
-    override fun aGrab(): Frame = ffmpeg.grab()
-    override fun aGrabImage(): Frame = ffmpeg.grabImage()
-    override fun aGrabAudio(): Frame = ffmpeg.grabSamples()
+    override fun aGrab(): Frame? = ffmpeg.grab()
+    override fun aGrabImage(): Frame? = ffmpeg.grabImage()
+    override fun aGrabAudio(): Frame? = ffmpeg.grabSamples()
     override fun aSet(index: Int) {
         ffmpeg.frameNumber = index
     }

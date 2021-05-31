@@ -92,7 +92,7 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
                 if (isPlaying && grabber.index <= grabber.getFrameGrabber().lengthInFrames) {
                     if (!imgBuf.isFilled() || !audioBuf.isFilled()) {
                         try {
-                            val f = grabber.grab()
+                            val f = grabber.grab() ?: continue
                             if (f.types.contains(Frame.Type.VIDEO)) {
                                 val i = converter.getBufferedImage(f)
                                 if (i != null) imgBuf.add(i)
