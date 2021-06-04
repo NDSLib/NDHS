@@ -1,18 +1,65 @@
 package com.ndsl.ndhs
 
-import com.github.bun133.nngraphics.display.JFrameDisplay
-import com.github.bun133.nngraphics.display.Pos
-import com.github.bun133.nngraphics.display.Rect
+import com.github.bun133.nngraphics.display.*
 import com.ndsl.ndhs.javacv.*
+import com.ndsl.ndhs.ui.DLine
+import com.ndsl.ndhs.ui.DrawableDrawable
 import org.bytedeco.javacv.Frame
 import java.io.File
 import kotlin.concurrent.thread
+import kotlin.random.Random
 import kotlin.time.measureTime
 
 fun main() {
 //    Main().main()
 //    BufferTest().test()
-    DoublingTest().main2()
+//    DoublingTest().main2()
+    DrawableDrawableTest().main()
+//    StandardDrawableTest().main()
+}
+
+class StandardDrawableTest {
+    fun main() {
+        val d = JFrameDisplay(bound = Rect(100, 100, 500, 500))
+        val ds = mutableListOf<Drawable>()
+        val r = Random(158464684)
+        for (i in 0..1000) {
+            ds.add(DLine(Pos(r.nextInt(100), r.nextInt(100)), Pos(r.nextInt(100), r.nextInt(100))))
+        }
+
+        val layer = d.scene().newLayer()
+
+        ds.forEach { layer.add(it) }
+
+        while (true) {
+            d.draw.update()
+        }
+    }
+}
+
+class DrawableDrawableTest {
+    fun main() {
+        val d = JFrameDisplay(bound = Rect(100, 100, 500, 500))
+        val ds = mutableListOf<Drawable>()
+        val r = Random(158464684)
+        for (i in 0..100) {
+            ds.add(DLine(Pos(r.nextInt(500), r.nextInt(500)), Pos(r.nextInt(500), r.nextInt(500))))
+        }
+
+        val dd = DrawableDrawable(ds)
+
+        d.mouse.register.register({
+            dd.setPos(Pos(it.point))
+        }, Mouse.Type.Move)
+
+        val layer = d.scene().newLayer()
+
+        layer.add(dd)
+
+        while (true) {
+            d.draw.update()
+        }
+    }
 }
 
 class DoublingTest {
