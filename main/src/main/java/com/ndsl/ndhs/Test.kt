@@ -1,11 +1,14 @@
 package com.ndsl.ndhs
 
 import com.github.bun133.nngraphics.display.*
+import com.ndsl.ndhs.display.FullImageDisplay
 import com.ndsl.ndhs.javacv.*
 import com.ndsl.ndhs.ui.DLine
 import com.ndsl.ndhs.ui.DrawableDrawable
+import com.ndsl.ndhs.ui.FPSMeasure
 import org.bytedeco.javacv.Frame
 import java.io.File
+import javax.imageio.ImageIO
 import kotlin.concurrent.thread
 import kotlin.random.Random
 import kotlin.time.measureTime
@@ -14,8 +17,31 @@ fun main() {
 //    Main().main()
 //    BufferTest().test()
 //    DoublingTest().main2()
-    DrawableDrawableTest().main()
+//    DrawableDrawableTest().main()
 //    StandardDrawableTest().main()
+//    FPSMeasureTest().main()
+    FullImageDisplayTest().main()
+}
+
+class FullImageDisplayTest {
+    fun main() {
+        val d = FullImageDisplay(ImageIO.read(File("main\\src\\main\\resources\\test.png")), Pos(100, 100))
+        while (true) {
+            d.display.draw.update()
+        }
+    }
+}
+
+class FPSMeasureTest {
+    fun main() {
+        val d = JFrameDisplay(bound = Rect(100, 100, 500, 500))
+
+        d.scene().newLayer().add(FPSMeasure(d))
+
+        while (true) {
+            d.draw.update()
+        }
+    }
 }
 
 class StandardDrawableTest {
@@ -55,6 +81,7 @@ class DrawableDrawableTest {
         val layer = d.scene().newLayer()
 
         layer.add(dd)
+        layer.add(FPSMeasure(d)) // FPS
 
         while (true) {
             d.draw.update()
