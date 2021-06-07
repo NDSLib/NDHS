@@ -6,6 +6,7 @@ import com.ndsl.ndhs.util.Named
  * TimeLine全体(何ならこれがプロジェクト全体まである)
  */
 abstract class TimeLine : Named() {
-    abstract fun layers(): MutableList<Layer>
-    abstract fun getAt(index: Long):MutableMap<Layer,Content>
+    abstract fun layers(): MutableList<Layer<*>>
+    abstract fun getAt(index: Long):MutableMap<Layer<*>,Content<*>>
+    abstract fun <T> getAt(index:Long,clazz:Class<T>):MutableMap<Layer<T>,Content<T>>
 }

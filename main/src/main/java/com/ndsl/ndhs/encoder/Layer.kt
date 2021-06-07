@@ -1,5 +1,12 @@
 package com.ndsl.ndhs.encoder
 
-abstract class Layer {
-    abstract fun getContents():MutableList<Content>
+import java.awt.image.BufferedImage
+import java.nio.Buffer
+
+abstract class Layer<T> {
+    abstract fun getContents():MutableList<Content<T>>
 }
+
+abstract class VideoLayer:Layer<BufferedImage>()
+
+abstract class AudioLayer:Layer<Array<Buffer>>()

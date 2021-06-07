@@ -3,13 +3,16 @@ package com.ndsl.ndhs.plugin
 import com.ndsl.ndhs.NDHS
 import com.ndsl.ndhs.encoder.Encoder
 import com.ndsl.ndhs.encoder.Filter
+import com.ndsl.ndhs.io.TimeLineLoader
 import com.ndsl.ndhs.util.Named
+import java.awt.image.BufferedImage
+import java.nio.Buffer
 
 /**
  * Plugin本体クラス
  * これをOverrideさせる
  */
-abstract class NDHSPlugin(val ndhs:NDHS) : Named() {
+abstract class NDHSPlugin(val ndhs: NDHS) : Named() {
     /**
      * 成功したならTrueを返そうね。
      */
@@ -19,6 +22,7 @@ abstract class NDHSPlugin(val ndhs:NDHS) : Named() {
     abstract fun getFilters(): MutableList<PluginFilter>
     abstract fun getEncoder(): MutableList<PluginEncoder>
     abstract fun getConfigLoader(): MutableList<PluginConfigLoader>
+    abstract fun getTimeLineLoader(): MutableList<PluginTimeLineLoader>
 }
 
 /**
@@ -32,7 +36,19 @@ abstract class PluginContent() {
  * PluginContentの中でFilterを返すもの
  */
 abstract class PluginFilter : PluginContent() {
-    abstract fun getFilter(): Filter
+    abstract fun getFilter(): Filter<*>
+
+    /**
+     * Video用のFilter返却
+     * getAudioFilterかこれかどちらか一方がnull,もう一方にインスタンス
+     */
+    abstract fun getVideoFilter():Filter<BufferedImage>?
+
+    /**
+     * Audio用のFilter返却
+     * getVideoFilterかこれかどちらか一方がnull,もう一方にインスタンス
+     */
+    abstract fun getAudioFilter():Filter<Array<Buffer>>?
 }
 
 /**
@@ -42,6 +58,17 @@ abstract class PluginEncoder : PluginContent() {
     abstract fun getEncoder(): Encoder
 }
 
+/**
+ * ConfigLoader、ConfigParserが渡される。
+ * (追加プロパティとか読み込める用)
+ */
 abstract class PluginConfigLoader : PluginContent() {
-    abstract fun getConfigLoader(): PluginConfigLoader
+    abstract fun getConfigLoader(): ConfigLoader
+}
+
+/**
+ * ProjectLoader
+ */
+abstract class PluginTimeLineLoader : PluginContent() {
+    abstract fun getProjectLoader(): TimeLineLoader
 }
