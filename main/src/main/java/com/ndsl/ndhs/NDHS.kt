@@ -37,9 +37,9 @@ class NDHS {
     }
 
     val manager: AllManager = AllManager()
-    private val pluginLoader = PluginLoader()
+    private val pluginLoader = PluginLoader(this)
         .also { manager.pluginLoader = it }
-        .also { it.loadAll(PluginFolder, this) }
+        .also { it.loadAll(PluginFolder) }
         .also { manager.registerAll(it) }
     val drawer = NDHSDrawer(this)
     val tickManager = TickManager(this, pluginLoader)
@@ -47,14 +47,20 @@ class NDHS {
 
     // Methods
     fun getPlugins(containDisabled: Boolean = false) = manager.getPlugins(containDisabled)
+    fun getPlugin(name: String, containDisabled: Boolean = false) =
+        getPlugins(containDisabled).filter { it.name() == name }
 
     /**
      * GUI Windowを簡単に生成できます(推奨)
      * @param plugin Pluginからアクセスしているときはそのインスタンス(nullはSystemからのアクセス)
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun newGUIWindow(bound: Rect, plugin: NDHSPlugin?): NDHSDisplay {
-        val d = NDHSDisplay(bound = bound, closeOperation = JFrame.DISPOSE_ON_CLOSE)
+    fun newGUIWindow(bound: Rect, plugin: NDHSPlugin?, exitOnClose: Boolean = false): NDHSDisplay {
+        val d = if (!exitOnClose) {
+            NDHSDisplay(bound = bound, closeOperation = JFrame.DISPOSE_ON_CLOSE)
+        } else {
+            NDHSDisplay(bound = bound, closeOperation = JFrame.EXIT_ON_CLOSE)
+        }
         guiWindows.add(Pair(d, plugin))
         return d
     }
