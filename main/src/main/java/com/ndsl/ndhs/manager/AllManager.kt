@@ -9,10 +9,12 @@ class AllManager {
     lateinit var pluginLoader:PluginLoader
     val configLoaders = Registry<PluginConfigLoader>()
     val timeLineLoaders = Registry<PluginTimeLineLoader>()
+    val tickListeners = Registry<PluginTickCallable>()
 
     fun register(plugin:NDHSPlugin){
         plugin.getConfigLoader().forEach { configLoaders.add(it) }
         plugin.getTimeLineLoader().forEach { timeLineLoaders.add(it) }
+        plugin.getTickCallables().forEach { tickListeners.add(it) }
     }
 
     fun registerAll(pluginLoader:PluginLoader){

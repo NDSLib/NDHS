@@ -302,7 +302,7 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
     }
 
     private fun getAudioNs(): Long {
-        return ((1000L * 1000L * 1000L) / grabber.getFrameGrabber().sampleRate)
+       return ((1000L * 1000L * 1000L) / grabber.getFrameGrabber().sampleRate)
     }
 
     fun width() = grabber.getFrameGrabber().imageWidth

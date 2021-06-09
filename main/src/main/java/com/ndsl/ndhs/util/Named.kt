@@ -7,3 +7,7 @@ open class Named {
         name = s
     }
 }
+
+interface StaticNamed{
+    val name:String
+}

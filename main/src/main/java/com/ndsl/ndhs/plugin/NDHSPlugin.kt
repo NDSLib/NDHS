@@ -1,5 +1,6 @@
 package com.ndsl.ndhs.plugin
 
+import com.ndsl.ndhs.ITickCallable
 import com.ndsl.ndhs.NDHS
 import com.ndsl.ndhs.encoder.Encoder
 import com.ndsl.ndhs.encoder.Filter
@@ -23,13 +24,17 @@ abstract class NDHSPlugin(val ndhs: NDHS) : Named() {
     abstract fun getEncoder(): MutableList<PluginEncoder>
     abstract fun getConfigLoader(): MutableList<PluginConfigLoader>
     abstract fun getTimeLineLoader(): MutableList<PluginTimeLineLoader>
+    abstract fun getTickCallables(): MutableList<PluginTickCallable>
 }
 
 /**
  * Pluginが返すものの大本
  */
 abstract class PluginContent() {
-    abstract fun getPlugin(): NDHSPlugin
+    /**
+     * System系はnull許容
+     */
+    abstract fun getPlugin(): NDHSPlugin?
 }
 
 /**
@@ -42,13 +47,13 @@ abstract class PluginFilter : PluginContent() {
      * Video用のFilter返却
      * getAudioFilterかこれかどちらか一方がnull,もう一方にインスタンス
      */
-    abstract fun getVideoFilter():Filter<BufferedImage>?
+    abstract fun getVideoFilter(): Filter<BufferedImage>?
 
     /**
      * Audio用のFilter返却
      * getVideoFilterかこれかどちらか一方がnull,もう一方にインスタンス
      */
-    abstract fun getAudioFilter():Filter<Array<Buffer>>?
+    abstract fun getAudioFilter(): Filter<Array<Buffer>>?
 }
 
 /**
@@ -71,4 +76,11 @@ abstract class PluginConfigLoader : PluginContent() {
  */
 abstract class PluginTimeLineLoader : PluginContent() {
     abstract fun getProjectLoader(): TimeLineLoader
+}
+
+/**
+ * Tick処理を登録する用
+ */
+abstract class PluginTickCallable : PluginContent() {
+    abstract fun getTickCallable(): ITickCallable
 }

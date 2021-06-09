@@ -10,7 +10,7 @@ class NDHSDrawer(val ndhs: NDHS) {
     fun invokeDrawThread() {
         drawThread = thread {
             while (true) {
-                display.draw.update()
+                display.jFrame.draw.update()
             }
         }
     }

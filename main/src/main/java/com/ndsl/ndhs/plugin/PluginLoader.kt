@@ -1,10 +1,7 @@
 package com.ndsl.ndhs.plugin
 
 import com.ndsl.ndhs.NDHS
-import java.io.BufferedReader
-import java.io.File
-import java.io.FileReader
-import java.net.URL
+import java.io.*
 import java.net.URLClassLoader
 
 class PluginLoader {
@@ -18,10 +15,11 @@ class PluginLoader {
     val plugins = mutableListOf<NDHSPlugin>()
 
     fun load(file: File, ndhs: NDHS): NDHSPlugin {
-        if (!file.endsWith(".jar")) throw NDHSPluginLoadingError("Plugin File is not JAR")
+        println("Loading Plugin File:${file.absolutePath}")
+        if (!file.name.endsWith(".jar")) throw NDHSPluginLoadingError("Plugin File is not JAR")
         val loader = URLClassLoader(arrayOf(file.toURI().toURL()), ClassLoader.getSystemClassLoader())
         val configURL =
-            loader.getResource(PluginConfigFileName) ?: throw NDHSPluginLoadingError("PluginConfig not found!")
+            loader.getResourceAsStream(PluginConfigFileName) ?: throw NDHSPluginLoadingError("PluginConfig not found!")
         val parser = ConfigParser(configURL)
         val pluginClassName = parser.getOrThrow(PluginClassConfigKey)
         val pluginName = parser.getOrThrow(PluginNameConfigKey)
@@ -53,7 +51,7 @@ class PluginLoader {
     }
 }
 
-class ConfigParser(configURL: URL) {
+class ConfigParser(configStream: InputStream) {
     companion object {
         const val Splitter = ':'
     }
@@ -61,10 +59,10 @@ class ConfigParser(configURL: URL) {
     val map = mutableMapOf<String, String>()
 
     init {
-        val reader = BufferedReader(FileReader(File(configURL.toURI())))
+        val reader = BufferedReader(InputStreamReader(configStream))
         reader.forEachLine {
             if (it.contains(Splitter)) {
-                map[it.substring(0, it.indexOf(Splitter))] = it.substring(it.indexOf(Splitter) + 1, it.lastIndex)
+                map[it.substring(0, it.indexOf(Splitter))] = it.substring(it.indexOf(Splitter) + 1, it.lastIndex + 1)
             } else {
                 throw NDHSPluginLoadingError("In ConfigParser,illegal line found")
             }
