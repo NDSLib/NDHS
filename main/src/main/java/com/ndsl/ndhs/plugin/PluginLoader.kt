@@ -58,7 +58,7 @@ class PluginLoader(val ndhs: NDHS) {
     }
 
     /**
-     * 依存関係確認
+     * 依存関係確認(全部読み込んでからやってしまうとかいうクソ)
      */
     fun requiredPluginCheck() {
         plugins.forEach {

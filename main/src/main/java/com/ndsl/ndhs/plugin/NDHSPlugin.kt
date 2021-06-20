@@ -1,5 +1,6 @@
 package com.ndsl.ndhs.plugin
 
+import com.ndsl.ndhs.ClipCacheManager
 import com.ndsl.ndhs.ITickCallable
 import com.ndsl.ndhs.NDHS
 import com.ndsl.ndhs.encoder.Encoder
@@ -25,6 +26,7 @@ abstract class NDHSPlugin(val ndhs: NDHS) : Named() {
     abstract fun getConfigLoader(): MutableList<PluginConfigLoader>
     abstract fun getTimeLineLoader(): MutableList<PluginTimeLineLoader>
     abstract fun getTickCallables(): MutableList<PluginTickCallable>
+    abstract fun getPluginClipCacheManager(): MutableList<PluginClipCacheManager>
 }
 
 /**
@@ -83,4 +85,9 @@ abstract class PluginTimeLineLoader : PluginContent() {
  */
 abstract class PluginTickCallable : PluginContent() {
     abstract fun getTickCallable(): ITickCallable
+}
+
+abstract class PluginClipCacheManager : PluginContent(){
+    abstract fun getPluginClipCacheManager() : ClipCacheManager<*>
+    abstract fun <T> getPluginClipCacheManagerTyped(t:T) : ClipCacheManager<T>
 }

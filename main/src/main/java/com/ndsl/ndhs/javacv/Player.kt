@@ -7,6 +7,7 @@ import org.bytedeco.javacv.Frame
 import org.bytedeco.javacv.Java2DFrameConverter
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
@@ -312,7 +313,7 @@ class Player(val grabber: FrameGrabber) : GraphicsDrawable() {
 
 
 class PlayerSeekBar(val player: Player, var nonFilled: Color = Color.GRAY, var filled: Color = Color.WHITE) :
-    GraphicsDrawable(), MouseBoundedListener {
+    GraphicsDrawable(), MouseBoundedListener<MouseEvent> {
     override fun onDraw(gg: Graphics) {
         player.onDraw(gg)
 
@@ -365,7 +366,7 @@ class PlayerSeekBar(val player: Player, var nonFilled: Color = Color.GRAY, var f
         (player.pos().y + player.height()) - (seekBarBottom + seekBarHeight) + (seekBarHeight + seekBarBottom)
     )
 
-    override fun on(p: Pos, t: Mouse.Type) {
+    override fun on(p: Pos, t: Mouse.Type, event:MouseEvent) {
         if (seekBarRect().contain(p)) {
             // SeekBar操作
             player.setFrame(player.grabber.getFrameGrabber().lengthInFrames * (p.x - player.pos().x) / player.width())
@@ -373,6 +374,7 @@ class PlayerSeekBar(val player: Player, var nonFilled: Color = Color.GRAY, var f
     }
 
     override fun type(): List<Mouse.Type> = listOf(Mouse.Type.LeftClick, Mouse.Type.Drag)
+    override var isIn: Boolean = false
 }
 
 /*

@@ -14,4 +14,8 @@ class NDHSDrawer(val ndhs: NDHS) {
             }
         }
     }
+
+    fun stopDrawThread(){
+        drawThread?.interrupt()
+    }
 }

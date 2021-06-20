@@ -3,9 +3,7 @@ package com.ndsl.ndhs
 import com.github.bun133.nngraphics.display.*
 import com.ndsl.ndhs.display.FullImageDisplay
 import com.ndsl.ndhs.javacv.*
-import com.ndsl.ndhs.ui.DLine
-import com.ndsl.ndhs.ui.DrawableDrawable
-import com.ndsl.ndhs.ui.FPSMeasure
+import com.ndsl.ndhs.ui.*
 import org.bytedeco.javacv.Frame
 import java.io.File
 import javax.imageio.ImageIO
@@ -20,7 +18,30 @@ fun main() {
 //    DrawableDrawableTest().main()
 //    StandardDrawableTest().main()
 //    FPSMeasureTest().main()
-    FullImageDisplayTest().main()
+//    FullImageDisplayTest().main()
+    NDHSDisplayTest().main()
+}
+
+class NDHSDisplayTest {
+    fun main() {
+        val ndhsDisplay = NDHSDisplay(bound = Rect(100, 100, 500, 500))
+        ndhsDisplay.UIManager.register(
+            Button(
+                label = Label(
+                    id = "label-1",
+                    rr = Rect(100, 100, 300, 140),
+                    text = "Text",
+                    fontSize = 15,
+                    style = UIPositionStyle.Left
+                ),
+                id = "button-1",
+                display = ndhsDisplay
+            )
+        )
+        while (true) {
+            ndhsDisplay.jFrame.draw.update()
+        }
+    }
 }
 
 class FullImageDisplayTest {
