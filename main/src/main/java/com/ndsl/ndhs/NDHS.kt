@@ -36,7 +36,7 @@ class NDHS {
         val guiWindows = mutableListOf<Pair<NDHSDisplay, NDHSPlugin?>>()
     }
 
-    val manager: AllManager = AllManager()
+    val manager: AllManager = AllManager(this)
     private val pluginLoader = PluginLoader(this)
         .also { manager.pluginLoader = it }
         .also { it.loadAll(PluginFolder) }

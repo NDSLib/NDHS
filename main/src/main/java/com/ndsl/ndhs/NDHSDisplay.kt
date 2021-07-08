@@ -20,16 +20,36 @@ class NDHSDisplay(val jFrame: JFrameDisplay) {
     ) : this(JFrameDisplay(name, bound, closeOperation, bufferSize, isUndecorated))
 
     val UIManager = UIManager(this)
+
+//    fun register(comp: UIComponent) = UIManager.register(comp)
+    fun <T : UIComponent> register(comp: T): T {
+        UIManager.register(comp)
+        return comp
+    }
+
+    fun register(comp: UIComponent, index: Int) = UIManager.register(comp, index)
+    fun get(id: String) = UIManager.getOrNull(id)
 }
 
 class UIManager(val ndhsDisplay: NDHSDisplay) {
-    private val UIComponent = mutableListOf<UIComponent>()
+    val UIComponent = mutableListOf<UIComponent>()
 
     fun register(component: UIComponent) = register(component, 0)
     fun register(component: UIComponent, index: Int) {
         if (getOrNull(component.name) != null) throw Exception("The Component ID ${component.name} is already taken")
+
+        //before子コンポーネント登録
+        component.before()?.forEach {
+            register(it, index)
+        }
+
         UIComponent.add(component)
         ndhsDisplay.jFrame.scene().layer(index).add(component)
+
+        // after子コンポーネント登録
+        component.after()?.forEach {
+            register(it, index)
+        }
     }
 
     fun getOrNull(id: String) = UIComponent.filter { it.name == id }.getOrNull(0)

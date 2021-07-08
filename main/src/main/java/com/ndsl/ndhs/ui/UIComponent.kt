@@ -5,15 +5,11 @@ import com.ndsl.ndhs.NDHSDisplay
 import com.ndsl.ndhs.font.FontBuilder
 import com.ndsl.ndhs.font.defaultFontName
 import com.ndsl.ndhs.ui.color.UIColorSet
-import com.ndsl.ndhs.util.StaticNamed
-import com.ndsl.ndhs.util.drawRect
-import com.ndsl.ndhs.util.fillRect
-import com.ndsl.ndhs.util.stringBound
+import com.ndsl.ndhs.util.*
 import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics
 import java.awt.event.MouseEvent
-import java.awt.geom.Rectangle2D
 
 /**
  * UIのベース、たぶんRectのほうがいいよね。
@@ -34,6 +30,15 @@ abstract class UIComponent(id: String, rr: Rect) : GraphicsDrawable(), StaticNam
 
     fun rect() = r
     abstract val color: UIColorSet
+    open var isVisible: Boolean = true
+        set(value) {
+            field = value
+            child().forEach { it.isVisible = value }
+        }
+
+    fun child() = combineMutableList(before(),after())
+    open fun after():MutableList<UIComponent>? = null
+    open fun before():MutableList<UIComponent>? = null
 }
 
 abstract class PositionableUIComponent(id: String, rr: Rect, style: UIPositionStyle) : UIComponent(id, rr)
@@ -85,26 +90,56 @@ class Label(id: String, rr: Rect, val f: Font, t: String, val style: UIPositionS
     override val color: UIColorSet = LabelColorSet(this)
 
     override fun onDraw(gg: Graphics, r: Rect) {
-        updateRect(gg, r)
+        if (!isVisible) return
         gg.font = f
+        // Font適用してなかった...
+        updateRect(gg, r)
         gg.color = color.mainColor
         when (style) {
             UIPositionStyle.Center -> {
                 // むずくね。
                 // そうでもなじかった。
-                gg.drawString(text, lastTimeCenterDrawRect.left_up.x, lastTimeCenterDrawRect.right_down.y)
+                gg.drawString(
+                    text,
+                    lastTimeCenterDrawRect.left_up.x,
+                    avg(
+                        lastTimeCenterDrawRect.right_down.y,
+                        lastTimeCenterDrawRect.left_up.y
+                    ) + lastTimeCenterDrawRect.height() / 2
+                )
             }
 
             UIPositionStyle.None -> {
-                gg.drawString(text, r.left_up.x, lastTimeCenterDrawRect.right_down.y)
+                gg.drawString(
+                    text,
+                    r.left_up.x,
+                    avg(
+                        lastTimeCenterDrawRect.right_down.y,
+                        lastTimeCenterDrawRect.left_up.y
+                    ) + lastTimeCenterDrawRect.height() / 2
+                )
             }
 
             UIPositionStyle.Left -> {
-                gg.drawString(text, r.left_up.x, lastTimeCenterDrawRect.right_down.y)
+                gg.drawString(
+                    text,
+                    r.left_up.x,
+                    avg(
+                        lastTimeCenterDrawRect.right_down.y,
+                        lastTimeCenterDrawRect.left_up.y
+                    ) + lastTimeCenterDrawRect.height() / 2
+                )
             }
 
             UIPositionStyle.Right -> {
-                gg.drawString(text, lastTimeRightDrawRect.left_up.x, lastTimeCenterDrawRect.right_down.y)
+                gg.drawString(
+                    text,
+                    lastTimeRightDrawRect.left_up.x,
+                    avg(
+                        lastTimeCenterDrawRect.right_down.y,
+                        lastTimeCenterDrawRect.left_up.y
+                    ) + lastTimeCenterDrawRect.height() / 2
+                )
             }
         }
     }
@@ -153,9 +188,11 @@ class Button(
         override var actionColor: Color = Color.CYAN
     }
 
+    override fun after(): MutableList<UIComponent> = mutableListOf(label)
+
     class MouseListener(val b: Button, override var isIn: Boolean = false) : MouseBoundedListener<MouseEvent> {
         override fun bound(): Rect = b.rect()
-        override fun on(p: Pos, t: Mouse.Type, event: MouseEvent) {
+        override fun onInBound(p: Pos, t: Mouse.Type, event: MouseEvent) {
             @Suppress("NON_EXHAUSTIVE_WHEN")
             when (t) {
                 Mouse.Type.Release -> {
@@ -166,18 +203,19 @@ class Button(
                     b.isClicking = true
                     b.clicking()
                 }
-                Mouse.Type.Exit ->{
+                Mouse.Type.Exit -> {
                     b.isClicking = false
                 }
             }
         }
-
-        override fun type(): List<Mouse.Type> = mutableListOf(Mouse.Type.LeftClick, Mouse.Type.Release,Mouse.Type.Exit)
+        override fun onOutBound(p: Pos, t: Mouse.Type, event: MouseEvent) = Unit
+        override fun type(): List<Mouse.Type> = mutableListOf(Mouse.Type.LeftClick, Mouse.Type.Release, Mouse.Type.Exit)
     }
 
     override val color: UIColorSet = ButtonColorSet(this)
     var isClicking = false
     override fun onDraw(gg: Graphics, r: Rect) {
+        if (!isVisible) return
         if (isClicking) {
             gg.color = color.actionColor
         } else {
@@ -187,14 +225,46 @@ class Button(
         gg.color = color.accentColor
         gg.drawRect(r)
         label.color.mainColor = color.mainColor
-        label.onDraw(gg)
     }
 
-    open fun clicked(){
-        println("Clicked")
+    open fun clicked() {
+        onClickListener.forEach { it(this) }
     }
-    open fun clicking(){
-        println("Clicking")
+
+    open fun clicking() {
+        onClickingListener.forEach { it(this) }
     }
+
+    private val onClickListener = mutableListOf<(Button) -> Unit>()
+    private val onClickingListener = mutableListOf<(Button) -> Unit>()
+    fun onClick(f: (Button) -> Unit) = onClickListener.add(f)
+    fun onClicking(f: (Button) -> Unit) = onClickingListener.add(f)
 }
 
+// ドロワー
+class Drawer<T>(
+    val button: Button,
+    id: String,
+    rr: Rect = button.rect(),
+    style: UIPositionStyle = UIPositionStyle.Left
+) : PositionableUIComponent(id, rr, style) {
+    init {
+        button.isVisible = false
+        button.onClick {
+            onClick()
+        }
+    }
+
+    class DrawerColorSet(comp: UIComponent) : UIColorSet(comp) {
+    }
+
+    override fun onDraw(gg: Graphics, r: Rect) {
+
+    }
+
+    override val color: UIColorSet = DrawerColorSet(this)
+
+    fun onClick(){
+
+    }
+}

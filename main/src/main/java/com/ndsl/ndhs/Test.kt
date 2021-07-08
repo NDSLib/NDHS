@@ -2,6 +2,9 @@ package com.ndsl.ndhs
 
 import com.github.bun133.nngraphics.display.*
 import com.ndsl.ndhs.display.FullImageDisplay
+import com.ndsl.ndhs.easing.DefaultEasingGenerator
+import com.ndsl.ndhs.easing.DoubleEasingDrawable
+import com.ndsl.ndhs.easing.EasingManager
 import com.ndsl.ndhs.javacv.*
 import com.ndsl.ndhs.ui.*
 import org.bytedeco.javacv.Frame
@@ -19,25 +22,91 @@ fun main() {
 //    StandardDrawableTest().main()
 //    FPSMeasureTest().main()
 //    FullImageDisplayTest().main()
-    NDHSDisplayTest().main()
+//    NDHSDisplayTest().main()
+    EasingTest().display(100,500,6)
+}
+
+class EasingTest {
+    fun display(height: Int, width: Int,mod:Int) {
+        val ndhsDisplay = NDHSDisplay(bound = Rect(100, 100, 500, 500))
+        DefaultEasingGenerator.Double.all.forEachIndexed { index, doubleEasing ->
+            ndhsDisplay.register(
+                DoubleEasingDrawable(
+                    "double_easing_$index",
+                    Rect(
+                        0 + (index / mod) * width,
+                        100 + (index % mod) * height,
+                        width + (index / mod) * width,
+                        100 + height + (index % mod) * height
+                    ),
+                    doubleEasing
+                )
+            )
+        }
+
+        while (true) {
+            ndhsDisplay.jFrame.draw.update()
+        }
+    }
 }
 
 class NDHSDisplayTest {
     fun main() {
         val ndhsDisplay = NDHSDisplay(bound = Rect(100, 100, 500, 500))
-        ndhsDisplay.UIManager.register(
+        ndhsDisplay.register(
+            Label(
+                id = "label-counter",
+                rr = Rect(100, 200, 300, 240),
+                text = "Counter:0",
+                fontSize = 15,
+                style = UIPositionStyle.Left
+            )
+        )
+        ndhsDisplay.register(
             Button(
                 label = Label(
                     id = "label-1",
                     rr = Rect(100, 100, 300, 140),
                     text = "Text",
                     fontSize = 15,
-                    style = UIPositionStyle.Left
+                    style = UIPositionStyle.Center
                 ),
                 id = "button-1",
                 display = ndhsDisplay
             )
         )
+        ndhsDisplay.register(
+            Button(
+                label = Label(
+                    id = "toggle-label",
+                    rr = Rect(200, 200, 300, 240),
+                    text = "Text",
+                    fontSize = 15,
+                    style = UIPositionStyle.Center
+                ),
+                id = "toggle-button",
+                display = ndhsDisplay
+            )
+        )
+
+        val label = ndhsDisplay.get("label-counter")!! as Label
+        val button = ndhsDisplay.get("button-1")!! as Button
+        val buttonText = ndhsDisplay.get("label-1")!! as Label
+        val toggleButton = ndhsDisplay.get("toggle-button")!! as Button
+
+        toggleButton.onClick {
+            button.isVisible = !button.isVisible
+            // レイヤー分け確認できるよ
+//            println(ndhsDisplay.jFrame.scene().layers.mapIndexed{index, layer -> "Layer${index}:${layer.drawables}" })
+        }
+
+        var count = 0
+        button.isVisible = false
+        button.onClick {
+            count++
+            label.text = "Counter:$count"
+        }
+
         while (true) {
             ndhsDisplay.jFrame.draw.update()
         }

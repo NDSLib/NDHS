@@ -3,6 +3,10 @@ package com.ndsl.ndhs.plugin
 import com.ndsl.ndhs.ClipCacheManager
 import com.ndsl.ndhs.ITickCallable
 import com.ndsl.ndhs.NDHS
+import com.ndsl.ndhs.easing.DoubleEasing
+import com.ndsl.ndhs.easing.Easing
+import com.ndsl.ndhs.easing.FloatEasing
+import com.ndsl.ndhs.easing.IntEasing
 import com.ndsl.ndhs.encoder.Encoder
 import com.ndsl.ndhs.encoder.Filter
 import com.ndsl.ndhs.io.TimeLineLoader
@@ -27,6 +31,7 @@ abstract class NDHSPlugin(val ndhs: NDHS) : Named() {
     abstract fun getTimeLineLoader(): MutableList<PluginTimeLineLoader>
     abstract fun getTickCallables(): MutableList<PluginTickCallable>
     abstract fun getPluginClipCacheManager(): MutableList<PluginClipCacheManager>
+    abstract fun getEasing(): MutableList<PluginEasing>
 }
 
 /**
@@ -87,7 +92,17 @@ abstract class PluginTickCallable : PluginContent() {
     abstract fun getTickCallable(): ITickCallable
 }
 
-abstract class PluginClipCacheManager : PluginContent(){
-    abstract fun getPluginClipCacheManager() : ClipCacheManager<*>
-    abstract fun <T> getPluginClipCacheManagerTyped(t:T) : ClipCacheManager<T>
+abstract class PluginClipCacheManager : PluginContent() {
+    abstract fun getPluginClipCacheManager(): ClipCacheManager<*>
+    abstract fun <T> getPluginClipCacheManagerTyped(t: T): ClipCacheManager<T>
+}
+
+/**
+ * Easingを提供するクラス
+ */
+abstract class PluginEasing : PluginContent() {
+    abstract fun getEasing(): Easing<*>
+    abstract fun getIntEasing(): IntEasing
+    abstract fun getFloatEasing(): FloatEasing
+    abstract fun getDoubleEasing(): DoubleEasing
 }

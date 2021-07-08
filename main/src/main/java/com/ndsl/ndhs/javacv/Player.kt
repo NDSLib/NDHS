@@ -366,12 +366,14 @@ class PlayerSeekBar(val player: Player, var nonFilled: Color = Color.GRAY, var f
         (player.pos().y + player.height()) - (seekBarBottom + seekBarHeight) + (seekBarHeight + seekBarBottom)
     )
 
-    override fun on(p: Pos, t: Mouse.Type, event:MouseEvent) {
+    override fun onInBound(p: Pos, t: Mouse.Type, event:MouseEvent) {
         if (seekBarRect().contain(p)) {
             // SeekBar操作
             player.setFrame(player.grabber.getFrameGrabber().lengthInFrames * (p.x - player.pos().x) / player.width())
         }
     }
+
+    override fun onOutBound(p: Pos, t: Mouse.Type, event: MouseEvent) = Unit
 
     override fun type(): List<Mouse.Type> = listOf(Mouse.Type.LeftClick, Mouse.Type.Drag)
     override var isIn: Boolean = false

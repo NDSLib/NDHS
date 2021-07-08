@@ -1,25 +1,29 @@
 package com.ndsl.ndhs.manager
 
+import com.ndsl.ndhs.NDHS
+import com.ndsl.ndhs.easing.EasingManager
 import com.ndsl.ndhs.plugin.*
 
 /**
  * いろんなクラスに散り散りになったいろんなものを集約するクラス
  */
-class AllManager {
-    lateinit var pluginLoader:PluginLoader
+class AllManager(val ndhs: NDHS) {
+    lateinit var pluginLoader: PluginLoader
     val configLoaders = Registry<PluginConfigLoader>()
     val timeLineLoaders = Registry<PluginTimeLineLoader>()
     val tickListeners = Registry<PluginTickCallable>()
     val clipCacheManagers = Registry<PluginClipCacheManager>()
+    val easingManager = EasingManager(ndhs)
 
-    fun register(plugin:NDHSPlugin){
+    fun register(plugin: NDHSPlugin) {
         plugin.getConfigLoader().forEach { configLoaders.add(it) }
         plugin.getTimeLineLoader().forEach { timeLineLoaders.add(it) }
         plugin.getTickCallables().forEach { tickListeners.add(it) }
         plugin.getPluginClipCacheManager().forEach { clipCacheManagers.add(it) }
+        plugin.getEasing().map { it.getEasing() }.forEach { easingManager.add(it) }
     }
 
-    fun registerAll(pluginLoader:PluginLoader){
+    fun registerAll(pluginLoader: PluginLoader) {
         pluginLoader.plugins.forEach { register(it) }
     }
 
