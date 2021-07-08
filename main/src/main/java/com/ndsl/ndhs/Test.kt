@@ -23,7 +23,7 @@ fun main() {
 //    FPSMeasureTest().main()
 //    FullImageDisplayTest().main()
 //    NDHSDisplayTest().main()
-    EasingTest().display(100,500,6)
+    EasingTest().display(100,400,7)
 }
 
 class EasingTest {

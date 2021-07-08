@@ -163,6 +163,47 @@ class DefaultEasingGenerator(easingManager: EasingManager) {
                 }
             }, "easeInOutBack", 1.0)
 
+            val easeInElastic = DoubleEasing({
+                if (it == .0) .0
+                else if (it == 1.0) 1.0
+                else -1 * 2.0.pow(10 * it - 10) * sin((it * 10 - 10.75) * (2 * PI) / 3)
+            }, "easeInElastic", 1.0)
+            val easeOutElastic = DoubleEasing({
+                if (it == .0) .0
+                else if (it == 1.0) 1.0
+                else 2.0.pow(-10 * it) * sin((it * 10 - .75) * (2 * PI) / 3) + 1
+            }, "easeOutElastic", 1.0)
+            val easeInOutElastic = DoubleEasing({
+                if (it == .0) .0
+                else if (it == 1.0) 1.0
+                else if (it < .5) -(2.0.pow(20 * it - 10) * sin((20 * it - 11.125) * (2 * PI) / 4.5)) / 2
+                else (2.0.pow(-20 * it + 10) * sin((20 * it - 11.125) * (2 * PI) / 4.5)) / 2 + 1
+            }, "easeInOutElastic", 1.0)
+
+            val easeInBounce = DoubleEasing({ 1 - easeOutBounce.f(1 - it) }, "easeInBounce", 1.0)
+            val easeOutBounce = DoubleEasing({
+                val n1 = 7.5625
+                val d1 = 2.75
+
+                if (it < 1 / d1) {
+                    n1 * it * it
+                } else if (it < 2 / d1) {
+                    n1 * (it - 1.5 / d1) * (it - 1.5 / d1) + 0.75
+                } else if (it < 2.5 / d1) {
+                    n1 * (it - 2.25 / d1) * (it - 2.25 / d1) + 0.9375
+                } else {
+                    n1 * (it - 2.625 / d1) * (it - 2.625 / d1) + 0.984375
+                }
+            }, "easeOutBounce", 1.0)
+            val easeInOutBounce =
+                DoubleEasing(
+                    {
+                        if (it < .5) (1 - easeOutBounce.f(1 - 2 * it)) / 2
+                        else (1 + easeOutBounce.f(2 * it - 1)) / 2
+                    },
+                    "easeInOutBounce", 1.0
+                )
+
             val all = mutableListOf(
                 easeInSine, easeOutSine, easeInOutSine,
                 easeInQuad, easeOutQuad, easeInOutQuad,
@@ -172,6 +213,8 @@ class DefaultEasingGenerator(easingManager: EasingManager) {
                 easeInExpo, easeOutExpo, easeInOutExpo,
                 easeInCirc, easeOutCirc, easeInOutCirc,
                 easeInBack, easeOutBack, easeInOutBack,
+                easeInElastic, easeOutElastic, easeInOutElastic,
+                easeInBounce, easeOutBounce, easeInOutBounce,
             )
         }
     }
