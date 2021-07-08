@@ -10,6 +10,7 @@ import com.ndsl.ndhs.easing.IntEasing
 import com.ndsl.ndhs.encoder.Encoder
 import com.ndsl.ndhs.encoder.Filter
 import com.ndsl.ndhs.io.TimeLineLoader
+import com.ndsl.ndhs.mode.Mode
 import com.ndsl.ndhs.util.Named
 import java.awt.image.BufferedImage
 import java.nio.Buffer
@@ -32,6 +33,7 @@ abstract class NDHSPlugin(val ndhs: NDHS) : Named() {
     abstract fun getTickCallables(): MutableList<PluginTickCallable>
     abstract fun getPluginClipCacheManager(): MutableList<PluginClipCacheManager>
     abstract fun getEasing(): MutableList<PluginEasing>
+    abstract fun getMode(): MutableList<PluginMode>
 }
 
 /**
@@ -105,4 +107,11 @@ abstract class PluginEasing : PluginContent() {
     abstract fun getIntEasing(): IntEasing
     abstract fun getFloatEasing(): FloatEasing
     abstract fun getDoubleEasing(): DoubleEasing
+}
+
+/**
+ * Mode追加用
+ */
+abstract class PluginMode : PluginContent() {
+    abstract fun get(): Mode
 }
