@@ -1,6 +1,6 @@
 package com.ndsl.ndhs.plugin
 
-import com.ndsl.ndhs.ClipCacheManager
+import com.ndsl.ndhs.cache.ClipCache
 import com.ndsl.ndhs.ITickCallable
 import com.ndsl.ndhs.NDHS
 import com.ndsl.ndhs.easing.DoubleEasing
@@ -95,8 +95,8 @@ abstract class PluginTickCallable : PluginContent() {
 }
 
 abstract class PluginClipCacheManager : PluginContent() {
-    abstract fun getPluginClipCacheManager(): ClipCacheManager<*>
-    abstract fun <T> getPluginClipCacheManagerTyped(t: T): ClipCacheManager<T>
+    abstract fun getPluginClipCacheManager(): ClipCache<*>
+    abstract fun <T> getPluginClipCacheManagerTyped(t: T): ClipCache<T>
 }
 
 /**

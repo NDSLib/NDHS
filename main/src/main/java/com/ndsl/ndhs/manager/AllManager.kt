@@ -1,7 +1,9 @@
 package com.ndsl.ndhs.manager
 
 import com.ndsl.ndhs.NDHS
+import com.ndsl.ndhs.cache.ClipCacheManager
 import com.ndsl.ndhs.easing.EasingManager
+import com.ndsl.ndhs.icon.IconManager
 import com.ndsl.ndhs.mode.ModeManager
 import com.ndsl.ndhs.plugin.*
 
@@ -13,15 +15,16 @@ class AllManager(val ndhs: NDHS) {
     val configLoaders = Registry<PluginConfigLoader>()
     val timeLineLoaders = Registry<PluginTimeLineLoader>()
     val tickListeners = Registry<PluginTickCallable>()
-    val clipCacheManagers = Registry<PluginClipCacheManager>()
+    val clipCacheManager = ClipCacheManager(ndhs)
     val easingManager = EasingManager(ndhs)
     val mode = ModeManager(ndhs)
+    val icon = IconManager(ndhs)
 
     fun register(plugin: NDHSPlugin) {
         plugin.getConfigLoader().forEach { configLoaders.add(it) }
         plugin.getTimeLineLoader().forEach { timeLineLoaders.add(it) }
         plugin.getTickCallables().forEach { tickListeners.add(it) }
-        plugin.getPluginClipCacheManager().forEach { clipCacheManagers.add(it) }
+        plugin.getPluginClipCacheManager().forEach { clipCacheManager.cache.add(it.getPluginClipCacheManager()) }
         plugin.getEasing().map { it.getEasing() }.forEach { easingManager.add(it) }
         plugin.getMode().forEach { mode.modes.add(it.get()) }
     }
