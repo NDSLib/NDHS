@@ -71,8 +71,7 @@ class NDHSDisplayTest {
                     fontSize = 15,
                     style = UIPositionStyle.Center
                 ),
-                id = "button-1",
-                display = ndhsDisplay
+                id = "button-1"
             )
         )
         ndhsDisplay.register(
@@ -84,8 +83,7 @@ class NDHSDisplayTest {
                     fontSize = 15,
                     style = UIPositionStyle.Center
                 ),
-                id = "toggle-button",
-                display = ndhsDisplay
+                id = "toggle-button"
             )
         )
 

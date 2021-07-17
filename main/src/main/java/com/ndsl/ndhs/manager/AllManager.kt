@@ -24,7 +24,7 @@ class AllManager(val ndhs: NDHS) {
         plugin.getConfigLoader().forEach { configLoaders.add(it) }
         plugin.getTimeLineLoader().forEach { timeLineLoaders.add(it) }
         plugin.getTickCallables().forEach { tickListeners.add(it) }
-        plugin.getPluginClipCacheManager().forEach { clipCacheManager.cache.add(it.getPluginClipCacheManager()) }
+        plugin.getPluginClipCacheManager().forEach { clipCacheManager.cacher.add(it.getPluginClipCacheManager()) }
         plugin.getEasing().map { it.getEasing() }.forEach { easingManager.add(it) }
         plugin.getMode().forEach { mode.modes.add(it.get()) }
     }

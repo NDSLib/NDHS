@@ -39,6 +39,11 @@ abstract class UIComponent(id: String, rr: Rect) : GraphicsDrawable(), StaticNam
     fun child() = combineMutableList(before(),after())
     open fun after():MutableList<UIComponent>? = null
     open fun before():MutableList<UIComponent>? = null
+
+    /**
+     * 引数にDisplayとか見たくないです。
+     */
+    open fun onAdded(display:NDHSDisplay){}
 }
 
 abstract class PositionableUIComponent(id: String, rr: Rect, style: UIPositionStyle) : UIComponent(id, rr)
@@ -165,12 +170,11 @@ class Button(
     val label: Label,
     id: String,
     style: UIPositionStyle = UIPositionStyle.None,
-    rr: Rect = label.rect(),
-    display: NDHSDisplay
+    rr: Rect = label.rect()
 ) :
     PositionableUIComponent(id, rr, style) {
 
-    init {
+    override fun onAdded(display: NDHSDisplay) {
         display.jFrame.mouse.listeners.add(MouseListener(this))
     }
 

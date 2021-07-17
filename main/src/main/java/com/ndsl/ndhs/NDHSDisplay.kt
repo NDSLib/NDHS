@@ -45,6 +45,7 @@ class UIManager(val ndhsDisplay: NDHSDisplay) {
 
         UIComponent.add(component)
         ndhsDisplay.jFrame.scene().layer(index).add(component)
+        component.onAdded(ndhsDisplay)
 
         // after子コンポーネント登録
         component.after()?.forEach {

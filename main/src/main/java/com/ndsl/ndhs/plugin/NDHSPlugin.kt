@@ -1,6 +1,6 @@
 package com.ndsl.ndhs.plugin
 
-import com.ndsl.ndhs.cache.ClipCache
+import com.ndsl.ndhs.cache.ClipCacher
 import com.ndsl.ndhs.ITickCallable
 import com.ndsl.ndhs.NDHS
 import com.ndsl.ndhs.easing.DoubleEasing
@@ -8,9 +8,9 @@ import com.ndsl.ndhs.easing.Easing
 import com.ndsl.ndhs.easing.FloatEasing
 import com.ndsl.ndhs.easing.IntEasing
 import com.ndsl.ndhs.encoder.Encoder
-import com.ndsl.ndhs.encoder.Filter
 import com.ndsl.ndhs.io.TimeLineLoader
 import com.ndsl.ndhs.mode.Mode
+import com.ndsl.ndhs.filter.Filter
 import com.ndsl.ndhs.util.Named
 import java.awt.image.BufferedImage
 import java.nio.Buffer
@@ -95,8 +95,8 @@ abstract class PluginTickCallable : PluginContent() {
 }
 
 abstract class PluginClipCacheManager : PluginContent() {
-    abstract fun getPluginClipCacheManager(): ClipCache<*>
-    abstract fun <T> getPluginClipCacheManagerTyped(t: T): ClipCache<T>
+    abstract fun getPluginClipCacheManager(): ClipCacher<*>
+    abstract fun <T> getPluginClipCacheManagerTyped(t: T): ClipCacher<T>
 }
 
 /**

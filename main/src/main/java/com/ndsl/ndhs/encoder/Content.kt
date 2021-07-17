@@ -1,5 +1,6 @@
 package com.ndsl.ndhs.encoder
 
+import com.ndsl.ndhs.filter.Filter
 import com.ndsl.ndhs.util.Named
 import java.awt.image.BufferedImage
 import java.nio.Buffer

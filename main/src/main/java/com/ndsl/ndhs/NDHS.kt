@@ -1,6 +1,5 @@
 package com.ndsl.ndhs
 
-import com.github.bun133.nngraphics.display.JFrameDisplay
 import com.github.bun133.nngraphics.display.Rect
 import com.ndsl.ndhs.manager.AllManager
 import com.ndsl.ndhs.plugin.NDHSPlugin
@@ -36,14 +35,13 @@ class NDHS {
         val guiWindows = mutableListOf<Pair<NDHSDisplay, NDHSPlugin?>>()
     }
 
-    val manager: AllManager = AllManager(this)
     private val pluginLoader = PluginLoader(this)
         .also { manager.pluginLoader = it }
         .also { it.loadAll(PluginFolder) }
         .also { manager.registerAll(it) }
     val drawer = NDHSDrawer(this)
     val tickManager = TickManager(this, pluginLoader)
-
+    val manager: AllManager = AllManager(this)
 
     // Methods
     fun getPlugins(containDisabled: Boolean = false) = manager.getPlugins(containDisabled)
@@ -64,4 +62,6 @@ class NDHS {
         guiWindows.add(Pair(d, plugin))
         return d
     }
+
+    fun getWorkingFolder() = File("")
 }
