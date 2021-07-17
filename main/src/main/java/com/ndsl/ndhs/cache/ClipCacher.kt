@@ -10,10 +10,19 @@ import com.ndsl.ndhs.manager.Registry
 abstract class ClipCacher<T> {
     abstract fun get(clip: CachedClip<T>, index: Long): T?
     abstract fun cache(clip: Clip<T>): CachedClip<T>
+
     // UnCacheできたらtrue
     abstract fun unCache(clip: CachedClip<T>): Boolean
+
     // Clipがキャッシュ出来そうか出来なさそうか
-    abstract fun isCacheable(clip:Clip<T>):Boolean
+    abstract fun isCacheable(clip: Clip<T>): Boolean
+
+    /**
+     * @return if the clip is not cached in this cacher,-1 or not,returns value
+     */
+    abstract fun getLength(cachedClip: CachedClip<T>): Long
+
+    fun isCached(cachedClip: CachedClip<T>) = getLength(cachedClip) != -1L
 }
 
 /**
@@ -23,7 +32,7 @@ open class CachedClip<T>(val cacher: ClipCacher<T>) : Clip<T>() {
     override fun get(index: Long): T? = cacher.get(this, index)
     fun unCache() = cacher.unCache(this)
     override fun length(): Long {
-        TODO("Not yet implemented")
+        return cacher.getLength(this)
     }
 }
 
@@ -32,6 +41,7 @@ class ClipCacheManager(val ndhs: NDHS) {
 
     init {
         // Defaults
-        cacher.add(DefaultVideoCacher(ndhs.getWorkingFolder(),ndhs))
+        cacher.add(DefaultVideoCacher(ndhs.getWorkingFolder(), ndhs))
+        cacher.add(DefaultImageCacher(ndhs.getWorkingFolder(), ndhs))
     }
 }

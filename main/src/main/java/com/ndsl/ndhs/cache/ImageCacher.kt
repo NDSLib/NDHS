@@ -50,9 +50,20 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
 
     override fun isCacheable(clip: Clip<BufferedImage>): Boolean = clip is CachedImage || clip.length() == 1L
 
+    override fun getLength(cachedClip: CachedClip<BufferedImage>): Long {
+        return if (cachedClip is CachedImage) {
+            if (getFile(cachedClip.imageUUID).exists()) {
+                1
+            } else {
+                -1
+            }
+        } else {
+            -1
+        }
+    }
+
     fun pull(image: CachedImage): BufferedImage? {
-        val filename = getFileName(image.imageUUID)
-        val pngFile = cacheFolder.child(filename + "")
+        val pngFile = getFile(image.imageUUID)
         return try {
             ImageIO.read(pngFile)
         } catch (e: IOException) {
@@ -63,8 +74,7 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
 
     fun push(image: BufferedImage?, uuid: UUID) {
         if (image != null) {
-            val filename = getFileName(uuid)
-            val pngFile = cacheFolder.child(filename + "")
+            val pngFile = getFile(uuid)
 
             // Write
             ImageIO.write(image, "png", pngFile)
@@ -72,8 +82,7 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
     }
 
     fun remove(uuid: UUID): Boolean {
-        val filename = getFileName(uuid)
-        val pngFile = cacheFolder.child(filename + "")
+        val pngFile = getFile(uuid)
         if (pngFile.exists()) {
             // TODO どっちにするか悩む
             pngFile.deleteOnExit()
@@ -94,5 +103,10 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
      */
     fun getFileName(uuid: String): String {
         return "cache-image-${uuid}.png"
+    }
+
+    fun getFile(uuid: UUID): File {
+        val filename = getFileName(uuid)
+        return cacheFolder.child(filename + "")
     }
 }
