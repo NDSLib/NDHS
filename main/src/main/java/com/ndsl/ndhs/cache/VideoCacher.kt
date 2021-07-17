@@ -44,7 +44,7 @@ class DefaultVideoCacher(val workingFolder: File, val ndhs: NDHS) : VideoCacher(
         return false
     }
 
-    override fun isCacheable(clip: Clip<BufferedImage>): Boolean = clip is CachedVideo
+    override fun isCacheable(clip: Clip<BufferedImage>): Boolean = clip is CachedVideo || clip.length() > 1L
 
 
     // 所定の場所に書き込み
