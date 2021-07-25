@@ -17,7 +17,7 @@ import java.awt.event.MouseEvent
 
 abstract class UIComponent(id: String, rr: Rect) : GraphicsDrawable(), StaticNamed {
     override val name = id
-    private var r = rr
+    protected var r = rr
     override fun onDraw(gg: Graphics) {
         onDraw(gg, rect())
     }

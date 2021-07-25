@@ -24,7 +24,7 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
     var cacheFolder = File(workingFolder.absolutePath + "\\cache\\image")
         .also {
             if (!it.exists()) {
-                if (it.mkdirs()) throw IOException("In DefaultVideoCacher,Cache Folder cannot be exist")
+                if (!it.mkdirs()) throw IOException("In DefaultVideoCacher,Cache Folder cannot be exist")
             }
         }
 
@@ -48,7 +48,7 @@ class DefaultImageCacher(val workingFolder: File, val ndhs: NDHS) : ImageCacher(
         return false
     }
 
-    override fun isCacheable(clip: Clip<BufferedImage>): Boolean = clip is CachedImage || clip.length() == 1L
+    override fun isCacheable(clip: Clip<*>): Boolean = clip is CachedImage || clip.length() == 1L
 
     override fun getLength(cachedClip: CachedClip<BufferedImage>): Long {
         return if (cachedClip is CachedImage) {

@@ -26,7 +26,7 @@ class FilteredVideoClip(val video: CachedVideo, var filters: List<Filter<Buffere
     override fun length(): Long = video.length()
 }
 
-class ImageClip(val image: CachedImage) : Clip<BufferedImage>() {
+open class ImageClip(val image: CachedImage) : Clip<BufferedImage>() {
     override fun get(index: Long): BufferedImage? = image.get(0)
     override fun length(): Long = 1
 }

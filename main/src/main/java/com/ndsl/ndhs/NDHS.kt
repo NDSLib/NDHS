@@ -35,13 +35,15 @@ class NDHS {
         val guiWindows = mutableListOf<Pair<NDHSDisplay, NDHSPlugin?>>()
     }
 
+
+    val drawer = NDHSDrawer(this)
+    val manager: AllManager = AllManager(this)
     private val pluginLoader = PluginLoader(this)
         .also { manager.pluginLoader = it }
         .also { it.loadAll(PluginFolder) }
         .also { manager.registerAll(it) }
-    val drawer = NDHSDrawer(this)
     val tickManager = TickManager(this, pluginLoader)
-    val manager: AllManager = AllManager(this)
+
 
     // Methods
     fun getPlugins(containDisabled: Boolean = false) = manager.getPlugins(containDisabled)
@@ -53,11 +55,16 @@ class NDHS {
      * @param plugin Pluginからアクセスしているときはそのインスタンス(nullはSystemからのアクセス)
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun newGUIWindow(bound: Rect, plugin: NDHSPlugin?, exitOnClose: Boolean = false): NDHSDisplay {
+    fun newGUIWindow(
+        bound: Rect,
+        plugin: NDHSPlugin?,
+        exitOnClose: Boolean = false,
+        isUnDecorated: Boolean = false
+    ): NDHSDisplay {
         val d = if (!exitOnClose) {
-            NDHSDisplay(bound = bound, closeOperation = JFrame.DISPOSE_ON_CLOSE)
+            NDHSDisplay(bound = bound, closeOperation = JFrame.DISPOSE_ON_CLOSE, isUndecorated = isUnDecorated)
         } else {
-            NDHSDisplay(bound = bound, closeOperation = JFrame.EXIT_ON_CLOSE)
+            NDHSDisplay(bound = bound, closeOperation = JFrame.EXIT_ON_CLOSE, isUndecorated = isUnDecorated)
         }
         guiWindows.add(Pair(d, plugin))
         return d

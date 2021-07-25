@@ -24,7 +24,7 @@ class DefaultVideoCacher(val workingFolder: File, val ndhs: NDHS) : VideoCacher(
     var cacheFolder = File(workingFolder.absolutePath + "\\cache\\video")
         .also {
             if (!it.exists()) {
-                if (it.mkdirs()) throw IOException("In DefaultVideoCacher,Cache Folder cannot be exist")
+                if (!it.mkdirs()) throw IOException("In DefaultVideoCacher,Cache Folder cannot be exist")
             }
         }
 
@@ -46,7 +46,7 @@ class DefaultVideoCacher(val workingFolder: File, val ndhs: NDHS) : VideoCacher(
         return false
     }
 
-    override fun isCacheable(clip: Clip<BufferedImage>): Boolean = clip is CachedVideo || clip.length() > 1L
+    override fun isCacheable(clip: Clip<*>): Boolean = clip is CachedVideo || clip.length() > 1L
     override fun getLength(cachedClip: CachedClip<BufferedImage>): Long {
         if (cachedClip is CachedVideo) {
             val files = cacheFolder.listFiles(

@@ -4,10 +4,12 @@ import com.github.bun133.nngraphics.display.JFrameDisplay
 import com.github.bun133.nngraphics.display.Layer
 import com.github.bun133.nngraphics.display.Rect
 import com.github.bun133.nngraphics.display.Scene
+import com.ndsl.ndhs.display.basic.HangBar
 import com.ndsl.ndhs.ui.UIComponent
+import java.util.*
 import javax.swing.JFrame
 
-class NDHSDisplay(val jFrame: JFrameDisplay) {
+class NDHSDisplay(val jFrame: JFrameDisplay, val isUndecorated: Boolean) {
     /**
      * あほ長Constructor
      */
@@ -17,11 +19,11 @@ class NDHSDisplay(val jFrame: JFrameDisplay) {
         closeOperation: Int = JFrame.EXIT_ON_CLOSE,
         bufferSize: Int = 3,
         isUndecorated: Boolean = false
-    ) : this(JFrameDisplay(name, bound, closeOperation, bufferSize, isUndecorated))
+    ) : this(JFrameDisplay(name, bound, closeOperation, bufferSize, true), isUndecorated)
 
     val UIManager = UIManager(this)
 
-//    fun register(comp: UIComponent) = UIManager.register(comp)
+    //    fun register(comp: UIComponent) = UIManager.register(comp)
     fun <T : UIComponent> register(comp: T): T {
         UIManager.register(comp)
         return comp
@@ -29,6 +31,13 @@ class NDHSDisplay(val jFrame: JFrameDisplay) {
 
     fun register(comp: UIComponent, index: Int) = UIManager.register(comp, index)
     fun get(id: String) = UIManager.getOrNull(id)
+
+
+    init {
+        if (!isUndecorated) {
+            UIManager.register(HangBar("HangBar-${UUID.randomUUID()}", Rect(0, 0, 0, 0), this))
+        }
+    }
 }
 
 class UIManager(val ndhsDisplay: NDHSDisplay) {

@@ -15,7 +15,7 @@ abstract class ClipCacher<T> {
     abstract fun unCache(clip: CachedClip<T>): Boolean
 
     // Clipがキャッシュ出来そうか出来なさそうか
-    abstract fun isCacheable(clip: Clip<T>): Boolean
+    abstract fun isCacheable(clip: Clip<*>): Boolean
 
     /**
      * @return if the clip is not cached in this cacher,-1 or not,returns value
@@ -38,6 +38,11 @@ open class CachedClip<T>(val cacher: ClipCacher<T>) : Clip<T>() {
 
 class ClipCacheManager(val ndhs: NDHS) {
     val cacher = Registry<ClipCacher<*>>()
+
+    fun getBestCacher(c: Clip<*>) {
+        cacher.list.filter { it.isCacheable(c) }
+    }
+
 
     init {
         // Defaults
